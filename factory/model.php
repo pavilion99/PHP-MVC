@@ -2,17 +2,23 @@
 class model
 {
   private $vals;
+  private $valid;
+
+  private $extra;
 
   public static function find($id) {
-    if(exists(get_called_class(), $id)) {
-      return new ${get_called_class}(get_data(get_called_class(), $id));
+    if(exists(strtolower(get_called_class()).'s', $id)) {
+      return new ${get_called_class}(get_data(strtolower(get_called_class()).'s', $id));
     } else {
       die("No record found with that value.");
     }
   }
 
-  function __construct($arr = []) {
+  private function __construct($arr = []) {
     $this->$vals = $arr;
+    foreach ($arr as $key => $value) {
+      $vals[] = $key;
+    }
   }
 
   public static function where($str) {
@@ -24,8 +30,10 @@ class model
   }
 
   public function __set($var, $val) {
-    if ($var = get_unique_column(get_class($this))) {
-      die("Cannot set primary key.");
+    if ($var = get_unique_column(strtolower(get_class($this)).'s')) {
+      $tbl = strtolower(get_class($this)).'s';
+      $col = get_unique_column($tbl);
+      $extra = "DELETE FROM `$tbl` WHERE `$col`='".$vals[$var]."'";
     }
     $vals[$var] = $val;
   }
@@ -33,10 +41,38 @@ class model
   public function save() {
     require($_SERVER["DOCUMENT_ROOT"]."/../config/database.php");
     $sql = getMySQL();
-    if ($this->exists()) {
-      $sql->query("UPDATE ``")
-    } else {
+    $tbl = strtolower(get_class($this)).'s';
 
+    if ($extra) {
+      $sql->query($extra);
+    }
+
+    if ($this->exists()) {
+      $inc = "";
+      foreach ($vals as $key => $value) {
+        if ($inc == "") {
+          $inc .= "`$key`='$value'";
+          continue;
+        }
+        $inc .= ",`$key`='$value'";
+      }
+
+      $col = get_unique_column($tbl);
+
+      $sql->query("UPDATE `$tbl` SET $inc WHERE `$col`='".$vals[$col]."'");
+    } else {
+      $inc = "";
+      foreach ($vals as $key => $value) {
+        if ($inc == "") {
+          $inc .= "`$key`='$value'";
+          continue;
+        }
+        $inc .= ",`$key`='$value'";
+      }
+
+      $col = get_unique_column($tbl);
+
+      $sql->query("INSERT INTO `$tbl` SET $inc WHERE `$col`='".$vals[$col]."'");
     }
   }
 
