@@ -1,0 +1,6 @@
+<?php
+class %%CONTROLLERNAME%%_controller extends controller
+{
+%%ACTIONDEFS%%
+}
+?>
