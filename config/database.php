@@ -1,6 +1,6 @@
 <?php
   $database["username"] = "pavilion99";
-  $database["password"] = "\$fcrapr3qrfxgbc14";
+  $database["password"] =
   $database["database"] = "phpmvctest";
   $database["host"] = "sql.spencercolton.tech";
   $database["port"] = 3306;
